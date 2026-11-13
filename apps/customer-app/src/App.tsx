@@ -32,6 +32,11 @@ function App() {
   const [search, setSearch] = useState('')
   const [cart, setCart] = useState<Record<number, number>>({})
   const [cartOpen, setCartOpen] = useState(false)
+  const [checkoutOpen, setCheckoutOpen] = useState(false)
+  const [tableNumber, setTableNumber] = useState('')
+  const [customerName, setCustomerName] = useState('')
+  const [phoneNumber, setPhoneNumber] = useState('')
+  const [formError, setFormError] = useState('')
 
   const visibleItems = useMemo(() => menu.filter((item) => {
     const matchesCategory = activeCategory === 'All' || item.category === activeCategory
@@ -51,11 +56,20 @@ function App() {
     })
   }
 
+  const continueToPayment = () => {
+    if (!tableNumber.trim() || !customerName.trim() || !/^\\d{10}$/.test(phoneNumber.trim())) {
+      setFormError('Enter your table number, name and a valid 10-digit phone number.')
+      return
+    }
+    setFormError('')
+    window.alert(`Details saved for this checkout preview:\\nTable: ${tableNumber.trim()}\\nName: ${customerName.trim()}\\nPhone: ${phoneNumber.trim()}\\n\\nPayment and order submission will be connected to the backend next.`)
+  }
+
   return (
     <div className="storefront">
       <header className="topbar">
         <a className="brand" href="#" aria-label="Olive and Ember home"><span className="brand-mark"><UtensilsCrossed size={19} /></span><span>olive <i>&</i> ember</span></a>
-        <div className="table-pill"><span className="live-dot" /> TABLE 08</div>
+        <div className="table-pill"><span className="live-dot" /> SCAN & ORDER</div>
       </header>
 
       <main>
@@ -81,7 +95,9 @@ function App() {
 
       {itemCount > 0 && <button className="cart-fab" onClick={() => setCartOpen(true)}><span className="cart-count">{itemCount}</span><ShoppingBag size={19} /><span>View your order</span><strong>₹{subtotal}</strong><ArrowRight size={17} /></button>}
 
-      {cartOpen && <div className="drawer-backdrop" onClick={() => setCartOpen(false)}><aside className="cart-drawer" onClick={(event) => event.stopPropagation()}><div className="drawer-head"><div><span className="eyebrow">TABLE 08</span><h2>Your order<span>.</span></h2></div><button className="close-button" onClick={() => setCartOpen(false)} aria-label="Close cart"><X /></button></div>{cartItems.length ? <><div className="cart-lines">{cartItems.map((item) => <div className="cart-line" key={item.id}><span className="cart-emoji">{item.emoji}</span><div className="cart-line-info"><strong>{item.name}</strong><small>₹{item.price} each</small><div className="quantity-control"><button onClick={() => changeQuantity(item.id, -1)} aria-label={`Remove one ${item.name}`}><Minus size={13} /></button><span>{cart[item.id]}</span><button onClick={() => changeQuantity(item.id, 1)} aria-label={`Add one ${item.name}`}><Plus size={13} /></button></div></div><strong>₹{item.price * cart[item.id]}</strong></div>)}</div><div className="drawer-total"><div><span>Subtotal</span><strong>₹{subtotal}</strong></div><small>Taxes, if applicable, are calculated at checkout.</small><button className="checkout-button" onClick={() => window.alert('Your cart is ready. Checkout and payment will be connected in the next development step.')}>Continue to checkout <ArrowRight size={17} /></button></div></> : <div className="empty-state"><span>🛍️</span><h3>Your bag is empty</h3><p>Add a dish to get started.</p></div>}</aside></div>}
+      {cartOpen && <div className="drawer-backdrop" onClick={() => setCartOpen(false)}><aside className="cart-drawer" onClick={(event) => event.stopPropagation()}><div className="drawer-head"><div><span className="eyebrow">YOUR SELECTION</span><h2>Your order<span>.</span></h2></div><button className="close-button" onClick={() => setCartOpen(false)} aria-label="Close cart"><X /></button></div>{cartItems.length ? <><div className="cart-lines">{cartItems.map((item) => <div className="cart-line" key={item.id}><span className="cart-emoji">{item.emoji}</span><div className="cart-line-info"><strong>{item.name}</strong><small>₹{item.price} each</small><div className="quantity-control"><button onClick={() => changeQuantity(item.id, -1)} aria-label={`Remove one ${item.name}`}><Minus size={13} /></button><span>{cart[item.id]}</span><button onClick={() => changeQuantity(item.id, 1)} aria-label={`Add one ${item.name}`}><Plus size={13} /></button></div></div><strong>₹{item.price * cart[item.id]}</strong></div>)}</div><div className="drawer-total"><div><span>Subtotal</span><strong>₹{subtotal}</strong></div><small>Taxes, if applicable, are calculated at checkout.</small><button className="checkout-button" onClick={() => { setCartOpen(false); setCheckoutOpen(true) }}>Continue to checkout <ArrowRight size={17} /></button></div></> : <div className="empty-state"><span>🛍️</span><h3>Your bag is empty</h3><p>Add a dish to get started.</p></div>}</aside></div>}
+
+      {checkoutOpen && <div className="drawer-backdrop" onClick={() => setCheckoutOpen(false)}><section className="checkout-panel" onClick={(event) => event.stopPropagation()} aria-labelledby="checkout-title"><div className="drawer-head"><div><span className="eyebrow">ALMOST THERE</span><h2 id="checkout-title">Your details<span>.</span></h2></div><button className="close-button" onClick={() => setCheckoutOpen(false)} aria-label="Close checkout"><X /></button></div><p className="checkout-intro">Please tell us where to bring your order. These details are collected only when you check out.</p><form className="checkout-form" onSubmit={(event) => { event.preventDefault(); continueToPayment() }}><label>Table number<input required value={tableNumber} onChange={(event) => setTableNumber(event.target.value)} placeholder="e.g. 8" /></label><label>Customer name<input required value={customerName} onChange={(event) => setCustomerName(event.target.value)} placeholder="Your name" /></label><label>Phone number<input required inputMode="numeric" autoComplete="tel" maxLength={10} pattern="[0-9]{10}" value={phoneNumber} onChange={(event) => setPhoneNumber(event.target.value.replace(/\\D/g, '').slice(0, 10))} placeholder="10-digit mobile number" /></label>{formError && <p className="form-error" role="alert">{formError}</p>}<div className="checkout-summary"><span>{itemCount} item(s)</span><strong>₹{subtotal}</strong></div><button className="checkout-button" type="submit">Review & continue <ArrowRight size={17} /></button></form></section></div>}
     </div>
   )
 }
