@@ -1,121 +1,88 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
+import { useMemo, useState } from 'react'
+import { ArrowRight, Clock3, Leaf, Minus, Plus, Search, ShoppingBag, Sparkles, UtensilsCrossed, X } from 'lucide-react'
 import './App.css'
 
+type MenuItem = {
+  id: number
+  name: string
+  description: string
+  price: number
+  category: string
+  tag?: string
+  vegetarian: boolean
+  emoji: string
+}
+
+const categories = ['All', 'Starters', 'Mains', 'Pizza', 'Drinks', 'Desserts']
+
+const menu: MenuItem[] = [
+  { id: 1, name: 'Truffle Parmesan Fries', description: 'Crispy golden fries, parmesan, herbs and truffle aioli.', price: 189, category: 'Starters', tag: 'Bestseller', vegetarian: true, emoji: '🍟' },
+  { id: 2, name: 'Crispy Lotus Stem', description: 'Sweet chilli glaze, toasted sesame and spring onion.', price: 219, category: 'Starters', vegetarian: true, emoji: '🥢' },
+  { id: 3, name: 'Garden Pesto Bowl', description: 'Basil pesto, roasted vegetables, cherry tomatoes and feta.', price: 329, category: 'Mains', tag: 'Fresh pick', vegetarian: true, emoji: '🥗' },
+  { id: 4, name: 'Smoky Paneer Tikka', description: 'Chargrilled paneer, peppers, mint yoghurt and pickled onion.', price: 349, category: 'Mains', vegetarian: true, emoji: '🍢' },
+  { id: 5, name: 'Classic Margherita', description: 'San Marzano tomato, fresh mozzarella and basil.', price: 399, category: 'Pizza', tag: 'Bestseller', vegetarian: true, emoji: '🍕' },
+  { id: 6, name: 'Wild Mushroom Pizza', description: 'Roasted mushrooms, mozzarella, thyme and garlic cream.', price: 469, category: 'Pizza', vegetarian: true, emoji: '🍄' },
+  { id: 7, name: 'Peach Iced Tea', description: 'Freshly brewed tea, peach and a hint of lemon.', price: 129, category: 'Drinks', vegetarian: true, emoji: '🍹' },
+  { id: 8, name: 'Cold Coffee', description: 'Slow-brewed coffee, chilled milk and vanilla.', price: 149, category: 'Drinks', vegetarian: true, emoji: '🧋' },
+  { id: 9, name: 'Lotus Biscoff Cheesecake', description: 'Creamy baked cheesecake with a caramel biscuit crumb.', price: 229, category: 'Desserts', tag: 'Must try', vegetarian: true, emoji: '🍰' },
+]
+
 function App() {
-  const [count, setCount] = useState(0)
+  const [activeCategory, setActiveCategory] = useState('All')
+  const [search, setSearch] = useState('')
+  const [cart, setCart] = useState<Record<number, number>>({})
+  const [cartOpen, setCartOpen] = useState(false)
+
+  const visibleItems = useMemo(() => menu.filter((item) => {
+    const matchesCategory = activeCategory === 'All' || item.category === activeCategory
+    const matchesSearch = `${item.name} ${item.description}`.toLowerCase().includes(search.toLowerCase())
+    return matchesCategory && matchesSearch
+  }), [activeCategory, search])
+
+  const cartItems = menu.filter((item) => cart[item.id])
+  const itemCount = Object.values(cart).reduce((sum, quantity) => sum + quantity, 0)
+  const subtotal = cartItems.reduce((sum, item) => sum + item.price * cart[item.id], 0)
+
+  const changeQuantity = (id: number, delta: number) => {
+    setCart((current) => {
+      const next = { ...current, [id]: Math.max(0, (current[id] ?? 0) + delta) }
+      if (next[id] === 0) delete next[id]
+      return next
+    })
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className="storefront">
+      <header className="topbar">
+        <a className="brand" href="#" aria-label="Olive and Ember home"><span className="brand-mark"><UtensilsCrossed size={19} /></span><span>olive <i>&</i> ember</span></a>
+        <div className="table-pill"><span className="live-dot" /> TABLE 08</div>
+      </header>
 
-      <div className="ticks"></div>
+      <main>
+        <section className="hero">
+          <div className="hero-copy">
+            <span className="eyebrow"><Sparkles size={14} /> GOOD FOOD, GOOD MOOD</span>
+            <h1>A little something<br /><em>delicious.</em></h1>
+            <p>Made fresh, served with love. Take a look around and find your new favourite.</p>
+            <div className="hero-meta"><span><Clock3 size={15} /> 20–30 min</span><span><Leaf size={15} /> Freshly prepared</span></div>
+          </div>
+          <div className="hero-art" role="img" aria-label="Illustration of a freshly prepared meal"><div className="plate"><span>🥑</span><span>🥬</span><span>🍅</span><span>🥕</span><span>🍋</span></div><div className="art-note">made fresh<br />for you ✳</div></div>
+        </section>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+        <section className="menu-section">
+          <div className="section-heading"><div><span className="eyebrow">FROM OUR KITCHEN</span><h2>The menu<span>.</span></h2></div><div className="search-box"><Search size={17} /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Find something tasty" aria-label="Search menu" />{search && <button onClick={() => setSearch('')} aria-label="Clear search"><X size={15} /></button>}</div></div>
+          <nav className="category-tabs" aria-label="Menu categories">{categories.map((category) => <button key={category} className={activeCategory === category ? 'active' : ''} onClick={() => setActiveCategory(category)}>{category}</button>)}</nav>
+          <div className="menu-grid">{visibleItems.map((item) => <article className="menu-card" key={item.id}><div className={`food-art food-${item.id}`}><span>{item.emoji}</span>{item.tag && <span className="food-tag">{item.tag}</span>}</div><div className="food-info"><div className="food-title-row"><h3>{item.name}</h3>{item.vegetarian && <span className="veg-mark" title="Vegetarian"><span /></span>}</div><p>{item.description}</p><div className="food-bottom"><strong>₹{item.price}</strong>{cart[item.id] ? <div className="quantity-control"><button onClick={() => changeQuantity(item.id, -1)} aria-label={`Remove one ${item.name}`}><Minus size={14} /></button><span>{cart[item.id]}</span><button onClick={() => changeQuantity(item.id, 1)} aria-label={`Add one ${item.name}`}><Plus size={14} /></button></div> : <button className="add-button" onClick={() => changeQuantity(item.id, 1)}><Plus size={15} /> Add</button>}</div></div></article>)}</div>
+          {visibleItems.length === 0 && <div className="empty-state"><span>🔎</span><h3>No dishes found</h3><p>Try another search or choose a different category.</p></div>}
+        </section>
+      </main>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+      <footer className="footer"><span>olive <i>&</i> ember</span><span>Thoughtfully made. Happily eaten.</span></footer>
+
+      {itemCount > 0 && <button className="cart-fab" onClick={() => setCartOpen(true)}><span className="cart-count">{itemCount}</span><ShoppingBag size={19} /><span>View your order</span><strong>₹{subtotal}</strong><ArrowRight size={17} /></button>}
+
+      {cartOpen && <div className="drawer-backdrop" onClick={() => setCartOpen(false)}><aside className="cart-drawer" onClick={(event) => event.stopPropagation()}><div className="drawer-head"><div><span className="eyebrow">TABLE 08</span><h2>Your order<span>.</span></h2></div><button className="close-button" onClick={() => setCartOpen(false)} aria-label="Close cart"><X /></button></div>{cartItems.length ? <><div className="cart-lines">{cartItems.map((item) => <div className="cart-line" key={item.id}><span className="cart-emoji">{item.emoji}</span><div className="cart-line-info"><strong>{item.name}</strong><small>₹{item.price} each</small><div className="quantity-control"><button onClick={() => changeQuantity(item.id, -1)} aria-label={`Remove one ${item.name}`}><Minus size={13} /></button><span>{cart[item.id]}</span><button onClick={() => changeQuantity(item.id, 1)} aria-label={`Add one ${item.name}`}><Plus size={13} /></button></div></div><strong>₹{item.price * cart[item.id]}</strong></div>)}</div><div className="drawer-total"><div><span>Subtotal</span><strong>₹{subtotal}</strong></div><small>Taxes, if applicable, are calculated at checkout.</small><button className="checkout-button" onClick={() => window.alert('Your cart is ready. Checkout and payment will be connected in the next development step.')}>Continue to checkout <ArrowRight size={17} /></button></div></> : <div className="empty-state"><span>🛍️</span><h3>Your bag is empty</h3><p>Add a dish to get started.</p></div>}</aside></div>}
+    </div>
   )
 }
 
