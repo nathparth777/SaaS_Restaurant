@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { ArrowRight, Clock3, Leaf, Minus, Plus, Search, ShoppingBag, Sparkles, UtensilsCrossed, X } from 'lucide-react'
 import './App.css'
 
@@ -29,6 +29,8 @@ const menu: MenuItem[] = [
 ]
 
 function App() {
+  const [menuItems, setMenuItems] = useState<MenuItem[]>(menu)
+  const [menuCategories, setMenuCategories] = useState(categories)
   const [activeCategory, setActiveCategory] = useState('All')
   const [search, setSearch] = useState('')
   const [cart, setCart] = useState<Record<number, number>>({})
@@ -40,13 +42,48 @@ function App() {
   const [formError, setFormError] = useState('')
   const [checkoutSubmitting, setCheckoutSubmitting] = useState(false)
 
-  const visibleItems = useMemo(() => menu.filter((item) => {
+  useEffect(() => {
+    const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
+    Promise.all([
+      fetch(`${apiBase}/api/public/menu/categories`),
+      fetch(`${apiBase}/api/public/menu/items`),
+    ]).then(async ([categoryResponse, itemResponse]) => {
+      if (!categoryResponse.ok || !itemResponse.ok) throw new Error('Menu API unavailable')
+      const apiCategories = await categoryResponse.json() as { id: string; name: string }[]
+      const apiItems = await itemResponse.json() as {
+        id: string; categoryId: string; name: string; description: string | null; price: number
+      }[]
+      const categoryNames = new Map(apiCategories.map(category => [category.id, category.name]))
+      const mappedItems = apiItems.map((item, index) => {
+        const display = menu.find(sample => sample.backendId === item.id)
+        return {
+          id: index + 1,
+          backendId: item.id,
+          name: item.name,
+          description: item.description || '',
+          price: Number(item.price),
+          category: categoryNames.get(item.categoryId) || 'Other',
+          tag: display?.tag,
+          vegetarian: display?.vegetarian ?? false,
+          emoji: display?.emoji || '🍽️',
+        }
+      })
+      if (mappedItems.length > 0) {
+        setMenuItems(mappedItems)
+        setMenuCategories(['All', ...apiCategories.map(category => category.name)])
+      }
+    }).catch(() => {
+      // Keep the bundled sample menu visible when the API is offline during local UI work.
+    })
+  }, [])
+
+  const visibleItems = useMemo(() => menuItems.filter((item) => {
     const matchesCategory = activeCategory === 'All' || item.category === activeCategory
     const matchesSearch = `${item.name} ${item.description}`.toLowerCase().includes(search.toLowerCase())
     return matchesCategory && matchesSearch
-  }), [activeCategory, search])
+  }), [menuItems, activeCategory, search])
 
-  const cartItems = menu.filter((item) => cart[item.id])
+  const cartItems = menuItems.filter((item) => cart[item.id])
   const itemCount = Object.values(cart).reduce((sum, quantity) => sum + quantity, 0)
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * cart[item.id], 0)
 
@@ -110,7 +147,7 @@ function App() {
 
         <section className="menu-section">
           <div className="section-heading"><div><span className="eyebrow">FROM OUR KITCHEN</span><h2>The menu<span>.</span></h2></div><div className="search-box"><Search size={17} /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Find something tasty" aria-label="Search menu" />{search && <button onClick={() => setSearch('')} aria-label="Clear search"><X size={15} /></button>}</div></div>
-          <nav className="category-tabs" aria-label="Menu categories">{categories.map((category) => <button key={category} className={activeCategory === category ? 'active' : ''} onClick={() => setActiveCategory(category)}>{category}</button>)}</nav>
+          <nav className="category-tabs" aria-label="Menu categories">{menuCategories.map((category) => <button key={category} className={activeCategory === category ? 'active' : ''} onClick={() => setActiveCategory(category)}>{category}</button>)}</nav>
           <div className="menu-grid">{visibleItems.map((item) => <article className="menu-card" key={item.id}><div className={`food-art food-${item.id}`}><span>{item.emoji}</span>{item.tag && <span className="food-tag">{item.tag}</span>}</div><div className="food-info"><div className="food-title-row"><h3>{item.name}</h3>{item.vegetarian && <span className="veg-mark" title="Vegetarian"><span /></span>}</div><p>{item.description}</p><div className="food-bottom"><strong>₹{item.price}</strong>{cart[item.id] ? <div className="quantity-control"><button onClick={() => changeQuantity(item.id, -1)} aria-label={`Remove one ${item.name}`}><Minus size={14} /></button><span>{cart[item.id]}</span><button onClick={() => changeQuantity(item.id, 1)} aria-label={`Add one ${item.name}`}><Plus size={14} /></button></div> : <button className="add-button" onClick={() => changeQuantity(item.id, 1)}><Plus size={15} /> Add</button>}</div></div></article>)}</div>
           {visibleItems.length === 0 && <div className="empty-state"><span>🔎</span><h3>No dishes found</h3><p>Try another search or choose a different category.</p></div>}
         </section>
