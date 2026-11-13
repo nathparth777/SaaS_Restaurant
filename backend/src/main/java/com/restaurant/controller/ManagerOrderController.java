@@ -21,7 +21,7 @@ public class ManagerOrderController {
 
     @GetMapping
     public List<OrderSummary> listOrders() {
-        return jdbcTemplate.query("""
+        List<OrderSummary> orders = jdbcTemplate.query("""
                 SELECT id, order_number, table_number, customer_name, customer_phone,
                        order_status, total_amount, created_at
                 FROM customer_orders
@@ -36,7 +36,14 @@ public class ManagerOrderController {
                 rs.getString("order_status"),
                 rs.getBigDecimal("total_amount"),
                 rs.getObject("created_at", OffsetDateTime.class),
-                itemsFor(rs.getObject("id", UUID.class))));
+                List.of()));
+
+        return orders.stream()
+                .map(order -> new OrderSummary(
+                        order.id(), order.orderNumber(), order.tableNumber(),
+                        order.customerName(), order.customerPhone(), order.status(),
+                        order.totalAmount(), order.createdAt(), itemsFor(order.id())))
+                .toList();
     }
 
     private List<OrderItemSummary> itemsFor(UUID orderId) {
