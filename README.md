@@ -10,7 +10,7 @@ A single-restaurant QR-based ordering application with two React frontends and o
 
 ## Current status
 
-The customer app includes an interactive menu prototype with category filtering, search, item quantities and a cart drawer. Menu content is sample data; checkout, payment verification and API integration are not connected yet.
+The customer app includes an interactive menu prototype with category filtering, search, item quantities, a cart drawer and a checkout details form. Customers enter their table number, name and 10-digit phone number at checkout. Menu content is sample data; order submission, payment verification and API integration are not connected yet.
 
 ## Run the customer app
 
@@ -39,6 +39,6 @@ cd backend
 
 ## Product direction
 
-The MVP starts with one restaurant, a shared backend and one PostgreSQL database. Customers scan a table QR code, browse the menu, create an order and track its progress. Managers authenticate separately to review orders, verify payments and manage the menu.
+The MVP starts with one restaurant, a shared backend and one PostgreSQL database. Customers scan one common restaurant QR code (the same QR for every table), browse the menu, enter their table number and contact details at checkout, create an order and track its progress. Managers authenticate separately to review orders, verify payments and manage the menu.
 
 Payment success must be verified by a trusted gateway webhook or by the manager against the merchant payment record; a customer-provided success screen or UTR alone is not proof of payment.
