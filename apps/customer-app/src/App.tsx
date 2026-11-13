@@ -59,7 +59,7 @@ function App() {
   }
 
   const continueToPayment = async () => {
-    if (!tableNumber.trim() || !customerName.trim() || !/^\\d{10}$/.test(phoneNumber.trim())) {
+    if (!tableNumber.trim() || !customerName.trim() || !/^\d{10}$/.test(phoneNumber.trim())) {
       setFormError('Enter your table number, name and a valid 10-digit phone number.')
       return
     }
