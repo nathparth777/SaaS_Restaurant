@@ -1,184 +1,45 @@
-.counter {
-  font-size: 16px;
-  padding: 5px 10px;
-  border-radius: 5px;
-  color: var(--accent);
-  background: var(--accent-bg);
-  border: 2px solid transparent;
-  transition: border-color 0.3s;
-  margin-bottom: 24px;
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@500;600&display=swap');
 
-  &:hover {
-    border-color: var(--accent-border);
-  }
-  &:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-  }
-}
-
-.hero {
-  position: relative;
-
-  .base,
-  .framework,
-  .vite {
-    inset-inline: 0;
-    margin: 0 auto;
-  }
-
-  .base {
-    width: 170px;
-    position: relative;
-    z-index: 0;
-  }
-
-  .framework,
-  .vite {
-    position: absolute;
-  }
-
-  .framework {
-    z-index: 1;
-    top: 34px;
-    height: 28px;
-    transform: perspective(2000px) rotateZ(300deg) rotateX(44deg) rotateY(39deg)
-      scale(1.4);
-  }
-
-  .vite {
-    z-index: 0;
-    top: 107px;
-    height: 26px;
-    width: auto;
-    transform: perspective(2000px) rotateZ(300deg) rotateX(40deg) rotateY(39deg)
-      scale(0.8);
-  }
-}
-
-#center {
-  display: flex;
-  flex-direction: column;
-  gap: 25px;
-  place-content: center;
-  place-items: center;
-  flex-grow: 1;
-
-  @media (max-width: 1024px) {
-    padding: 32px 20px 24px;
-    gap: 18px;
-  }
-}
-
-#next-steps {
-  display: flex;
-  border-top: 1px solid var(--border);
-  text-align: left;
-
-  & > div {
-    flex: 1 1 0;
-    padding: 32px;
-    @media (max-width: 1024px) {
-      padding: 24px 20px;
-    }
-  }
-
-  .icon {
-    margin-bottom: 16px;
-    width: 22px;
-    height: 22px;
-  }
-
-  @media (max-width: 1024px) {
-    flex-direction: column;
-    text-align: center;
-  }
-}
-
-#docs {
-  border-right: 1px solid var(--border);
-
-  @media (max-width: 1024px) {
-    border-right: none;
-    border-bottom: 1px solid var(--border);
-  }
-}
-
-#next-steps ul {
-  list-style: none;
-  padding: 0;
-  display: flex;
-  gap: 8px;
-  margin: 32px 0 0;
-
-  .logo {
-    height: 18px;
-  }
-
-  a {
-    color: var(--text-h);
-    font-size: 16px;
-    border-radius: 6px;
-    background: var(--social-bg);
-    display: flex;
-    padding: 6px 12px;
-    align-items: center;
-    gap: 8px;
-    text-decoration: none;
-    transition: box-shadow 0.3s;
-
-    &:hover {
-      box-shadow: var(--shadow);
-    }
-    .button-icon {
-      height: 18px;
-      width: 18px;
-    }
-  }
-
-  @media (max-width: 1024px) {
-    margin-top: 20px;
-    flex-wrap: wrap;
-    justify-content: center;
-
-    li {
-      flex: 1 1 calc(50% - 8px);
-    }
-
-    a {
-      width: 100%;
-      justify-content: center;
-      box-sizing: border-box;
-    }
-  }
-}
-
-#spacer {
-  height: 88px;
-  border-top: 1px solid var(--border);
-  @media (max-width: 1024px) {
-    height: 48px;
-  }
-}
-
-.ticks {
-  position: relative;
-  width: 100%;
-
-  &::before,
-  &::after {
-    content: '';
-    position: absolute;
-    top: -4.5px;
-    border: 5px solid transparent;
-  }
-
-  &::before {
-    left: 0;
-    border-left-color: var(--border);
-  }
-  &::after {
-    right: 0;
-    border-right-color: var(--border);
-  }
-}
+:root { font-family: 'DM Sans', sans-serif; color: #252b22; background: #f8f7f2; font-synthesis: none; text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased; }
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 320px; min-height: 100vh; }
+button, input { font: inherit; }
+button { cursor: pointer; }
+.manager-login-shell { min-height: 100vh; display: grid; place-items: center; padding: 24px; }
+.manager-login { width: min(420px, 100%); padding: 38px; border: 1px solid #e9e6dc; border-radius: 12px; background: #fffefa; box-shadow: 0 18px 60px #302d1b0b; }
+.manager-brand { display: flex; align-items: center; gap: 10px; color: #252b22; font: 600 21px 'Playfair Display', Georgia, serif; }
+.manager-brand > span { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 50%; color: white; background: #315b43; }
+.manager-brand small { margin-left: auto; color: #bd6740; font: 800 9px 'DM Sans', sans-serif; letter-spacing: 1.4px; }
+.manager-eyebrow { margin: 35px 0 8px; color: #bd6740; font-size: 10px; font-weight: 800; letter-spacing: 1.7px; }
+.manager-login h1, .orders-heading h1 { margin: 0; color: #252b22; font: 500 42px 'Playfair Display', Georgia, serif; letter-spacing: -1.2px; }
+.login-copy { margin: 10px 0 26px; color: #85857c; font-size: 13px; }
+.manager-login label { display: flex; flex-direction: column; gap: 8px; margin: 16px 0; color: #4b5048; font-size: 11px; font-weight: 700; }
+.manager-login input { width: 100%; padding: 13px; border: 1px solid #e5e3da; border-radius: 6px; background: white; color: #252b22; outline: none; }
+.manager-login input:focus { border-color: #315b43; box-shadow: 0 0 0 3px #315b4312; }
+.manager-primary { width: 100%; margin-top: 10px; padding: 14px; border: 0; border-radius: 6px; color: white; background: #315b43; font-size: 12px; font-weight: 750; }
+.manager-primary:disabled, .manager-secondary:disabled { opacity: .6; cursor: wait; }
+.login-hint { margin: 20px 0 0; color: #99988d; font-size: 10px; line-height: 1.6; }
+.manager-shell { max-width: 1120px; margin: 0 auto; padding: 0 32px 60px; }
+.manager-topbar { height: 76px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e8e6dd; }
+.manager-actions { display: flex; align-items: center; gap: 10px; }
+.manager-secondary, .manager-logout { display: inline-flex; align-items: center; gap: 8px; padding: 9px 13px; border: 1px solid #e4e2d8; border-radius: 6px; color: #4b5048; background: #fffefa; font-size: 11px; font-weight: 700; }
+.manager-logout { border-color: transparent; background: transparent; color: #85857c; }
+.orders-heading { display: flex; justify-content: space-between; align-items: end; margin: 42px 0 25px; }
+.orders-heading .manager-eyebrow { margin: 0 0 8px; }
+.orders-heading h1 span { color: #bd6740; }
+.orders-heading > div:first-child > p:last-child { margin: 9px 0 0; color: #85857c; font-size: 12px; }
+.orders-count { display: flex; align-items: center; gap: 9px; padding: 12px 15px; border: 1px solid #e8e6dd; border-radius: 7px; color: #315b43; background: #fffefa; }
+.orders-count strong { font-size: 18px; }.orders-count span { color: #85857c; font-size: 10px; }
+.orders-list { display: grid; gap: 15px; }
+.order-card { padding: 21px 23px; border: 1px solid #e9e6dc; border-radius: 9px; background: #fffefa; }
+.order-card-head { display: flex; align-items: center; justify-content: space-between; padding-bottom: 16px; border-bottom: 1px solid #efede6; }
+.order-card-head > div { display: flex; align-items: center; gap: 12px; }.order-number { color: #252b22; font-size: 13px; font-weight: 800; }.order-time { color: #99988d; font-size: 10px; }
+.order-status { padding: 6px 9px; border-radius: 20px; color: #8a6a27; background: #f7f0dd; font-size: 9px; font-weight: 800; letter-spacing: .5px; }
+.order-customer-grid { display: grid; grid-template-columns: .7fr 1.2fr 1fr; gap: 16px; padding: 17px 0; }
+.order-customer-grid > div { display: flex; flex-direction: column; gap: 5px; }.order-customer-grid small { color: #99988d; font-size: 9px; font-weight: 800; letter-spacing: 1px; }.order-customer-grid strong { color: #30362c; font-size: 12px; }
+.order-items { display: grid; gap: 9px; padding: 14px 0; border-top: 1px dashed #e9e6dc; }.order-item, .order-total { display: flex; justify-content: space-between; gap: 14px; color: #686b62; font-size: 11px; }.order-item strong { color: #4b5048; font-size: 11px; }
+.order-total { padding-top: 13px; border-top: 1px solid #efede6; color: #252b22; font-weight: 700; }.order-total strong { font-size: 15px; }
+.manager-empty { display: grid; justify-items: center; padding: 60px 20px; border: 1px dashed #dedbd0; border-radius: 9px; color: #8b8b81; background: #fffefa; text-align: center; }.manager-empty h2 { margin: 12px 0 3px; color: #252b22; font: 500 22px 'Playfair Display', Georgia, serif; }.manager-empty p { font-size: 11px; }
+.manager-error { padding: 11px 13px; border-radius: 5px; color: #a13d32; background: #fcece9; font-size: 11px; }.manager-loading { color: #85857c; font-size: 12px; }
+.manager-footnote { margin-top: 24px; color: #99988d; font-size: 10px; line-height: 1.6; }
+@media (max-width: 620px) { .manager-shell { padding: 0 16px 40px; }.manager-login { padding: 27px 22px; }.manager-topbar { height: 68px; }.manager-brand { font-size: 17px; }.manager-brand small { font-size: 8px; }.manager-actions { gap: 4px; }.manager-secondary, .manager-logout { padding: 8px; font-size: 10px; }.orders-heading { align-items: flex-start; gap: 10px; flex-direction: column; margin-top: 30px; }.orders-count { align-self: flex-start; }.order-card { padding: 16px; }.order-card-head > div { align-items: flex-start; flex-direction: column; gap: 4px; }.order-customer-grid { grid-template-columns: 1fr 1fr; }.order-customer-grid > div:last-child { grid-column: 1 / -1; } }
