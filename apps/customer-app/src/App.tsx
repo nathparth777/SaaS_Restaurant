@@ -57,7 +57,7 @@ function App() {
       const mappedItems = apiItems.map((item, index) => {
         const display = menu.find(sample => sample.backendId === item.id)
         return {
-          id: index + 1,
+          id: display?.id ?? index + 1,
           backendId: item.id,
           name: item.name,
           description: item.description || '',
