@@ -1,75 +1,48 @@
-# React + TypeScript + Vite
+# Restaurant QR Ordering
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A single-restaurant QR-based ordering application with two React frontends and one Spring Boot API.
 
-Currently, two official plugins are available:
+## Project structure
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- `apps/customer-app` — public menu and customer ordering experience
+- `apps/manager-app` — restaurant operations dashboard
+- `backend` — Java 21, Spring Boot and PostgreSQL API
 
-## React Compiler
+## Current status
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+The customer app includes an interactive menu, cart and checkout form. Customers enter their table number, name and 10-digit phone number at checkout. Checkout submits orders to the Spring Boot API; the backend validates menu availability and calculates the authoritative total. A demo menu is inserted by Flyway for a fresh database. Payment initiation and verification are not connected yet. The manager app provides authenticated viewing of incoming orders and customer/table details.
 
-## Expanding the ESLint configuration
+## Run the customer app
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+Set `VITE_API_BASE_URL` only if the backend is not running at `http://localhost:8080` (for example, create `apps/customer-app/.env.local`).
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```bash
+cd apps/customer-app
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+## Run the manager app
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```bash
+cd apps/manager-app
+npm install
+npm run dev -- --port 5174
 ```
+
+## Run the backend
+
+For local manager access, the defaults are username `manager` and password `change-me-now`. Override these with `MANAGER_USERNAME` and `MANAGER_PASSWORD`; never use the defaults in a deployed environment. Flyway applies the database migrations, including customer-entered table number/phone fields and demo menu data.
+
+Requirements: Java 21 and PostgreSQL. Configure `DB_URL` (default `jdbc:postgresql://localhost:5432/restaurant_db`), `DB_USERNAME` (default `postgres`) and `DB_PASSWORD`, then run:
+
+```bash
+cd backend
+./gradlew bootRun
+```
+
+## Product direction
+
+The MVP starts with one restaurant, a shared backend and one PostgreSQL database. Customers scan one common restaurant QR code (the same QR for every table), browse the menu, enter their table number and contact details at checkout, and submit an order. The manager app authenticates separately and displays incoming orders. Payment verification, order status actions, customer tracking, and menu management are future steps.
+
+Payment success must be verified by a trusted gateway webhook or by the manager against the merchant payment record; a customer-provided success screen or UTR alone is not proof of payment.
