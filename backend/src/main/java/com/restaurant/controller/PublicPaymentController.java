@@ -14,8 +14,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 import java.util.Map;
 import java.util.UUID;
 
@@ -161,6 +159,21 @@ public class PublicPaymentController {
         String gatewayPaymentId = payment.optString("id");
         if (gatewayOrderId.isBlank() || gatewayPaymentId.isBlank()) {
             return ResponseEntity.ok().build();
+        }
+
+        if ("payment.captured".equals(eventType)) {
+            long webhookAmount = payment.optLong("amount", -1);
+            String webhookCurrency = payment.optString("currency");
+            BigDecimal expectedAmount = jdbc.queryForObject(
+                    "SELECT amount FROM payments WHERE gateway_order_id = ?",
+                    BigDecimal.class, gatewayOrderId);
+            if (expectedAmount == null
+                    || webhookAmount != expectedAmount.movePointRight(2)
+                        .setScale(0, RoundingMode.UNNECESSARY).longValueExact()
+                    || !"INR".equalsIgnoreCase(webhookCurrency)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Webhook payment details do not match the stored order.");
+            }
         }
 
         String idempotencyKey = (eventId == null || eventId.isBlank())
