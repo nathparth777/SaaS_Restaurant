@@ -69,8 +69,8 @@ public class PublicPaymentController {
         options.put("receipt", order.get("order_number").toString());
         options.put("notes", new JSONObject().put("restaurant_order_id", orderId.toString()));
 
-        JSONObject gatewayOrder = razorpay.orders.create(options);
-        String gatewayOrderId = gatewayOrder.getString("id");
+        var gatewayOrder = razorpay.orders.create(options);
+        String gatewayOrderId = gatewayOrder.get("id").toString();
         jdbc.update("""
                 INSERT INTO payments
                     (id, order_id, payment_method, payment_status, amount, gateway_order_id)
