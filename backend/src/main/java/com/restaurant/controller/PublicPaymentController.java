@@ -4,6 +4,7 @@ import com.razorpay.RazorpayClient;
 import com.razorpay.Utils;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -30,12 +31,12 @@ public class PublicPaymentController {
 
     public PublicPaymentController(
             JdbcTemplate jdbc,
-            RazorpayClient razorpay,
+            ObjectProvider<RazorpayClient> razorpayProvider,
             @Value("${RAZORPAY_KEY_ID:}") String keyId,
             @Value("${RAZORPAY_KEY_SECRET:}") String keySecret,
             @Value("${RAZORPAY_WEBHOOK_SECRET:}") String webhookSecret) {
         this.jdbc = jdbc;
-        this.razorpay = razorpay;
+        this.razorpay = razorpayProvider.getIfAvailable();
         this.keyId = keyId;
         this.keySecret = keySecret;
         this.webhookSecret = webhookSecret;
