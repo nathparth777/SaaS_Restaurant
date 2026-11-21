@@ -216,7 +216,7 @@ public class PublicPaymentController {
     private void markPaymentCaptured(String gatewayOrderId, String paymentId, String signature) {
         int updated = jdbc.update("""
                 UPDATE payments SET payment_status = 'SUCCESS',
-                    gateway_payment_id = ?, gateway_signature = ?,
+                    gateway_payment_id = ?, gateway_signature = COALESCE(?, gateway_signature),
                     transaction_reference = ?, updated_at = CURRENT_TIMESTAMP
                 WHERE gateway_order_id = ?
                 """, paymentId, signature, paymentId, gatewayOrderId);
