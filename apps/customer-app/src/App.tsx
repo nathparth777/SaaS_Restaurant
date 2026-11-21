@@ -2,6 +2,42 @@ import { useEffect, useMemo, useState } from 'react'
 import { ArrowRight, Clock3, Leaf, Minus, Plus, Search, ShoppingBag, Sparkles, UtensilsCrossed, X } from 'lucide-react'
 import './App.css'
 
+type RazorpayResult = {
+  razorpay_payment_id: string
+  razorpay_order_id: string
+  razorpay_signature: string
+}
+
+type RazorpayOptions = {
+  key: string
+  amount: number
+  currency: string
+  name: string
+  description: string
+  order_id: string
+  prefill: { name: string; contact: string }
+  theme: { color: string }
+  handler: (response: RazorpayResult) => void
+  modal: { ondismiss: () => void }
+}
+
+declare global {
+  interface Window {
+    Razorpay?: new (options: RazorpayOptions) => { open: () => void }
+  }
+}
+
+function loadRazorpayCheckout(): Promise<boolean> {
+  if (window.Razorpay) return Promise.resolve(true)
+  return new Promise((resolve) => {
+    const script = document.createElement('script')
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js'
+    script.onload = () => resolve(true)
+    script.onerror = () => resolve(false)
+    document.body.appendChild(script)
+  })
+}
+
 type MenuItem = {
   id: number
   backendId: string
@@ -96,7 +132,7 @@ function App() {
   }
 
   const continueToPayment = async () => {
-    if (!tableNumber.trim() || !customerName.trim() || !/^\d{10}$/.test(phoneNumber.trim())) {
+    if (!tableNumber.trim() || !customerName.trim() || !/^\\d{10}$/.test(phoneNumber.trim())) {
       setFormError('Enter your table number, name and a valid 10-digit phone number.')
       return
     }
@@ -105,7 +141,7 @@ function App() {
     setCheckoutSubmitting(true)
     try {
       const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
-      const response = await fetch(`${apiBase}/api/public/orders`, {
+      const orderResponse = await fetch(`${apiBase}/api/public/orders`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -115,12 +151,63 @@ function App() {
           items: cartItems.map((item) => ({ menuItemId: item.backendId, quantity: cart[item.id] })),
         }),
       })
-      const payload = await response.json()
-      if (!response.ok) throw new Error(payload.detail || payload.message || 'We could not submit your order. Please try again.')
-      window.alert(`Order ${payload.orderNumber} has been created. Total: ₹${payload.totalAmount}. Payment will be available in the next step.`)
+      const order = await orderResponse.json()
+      if (!orderResponse.ok) throw new Error(order.detail || order.message || 'We could not submit your order. Please try again.')
+
+      const scriptLoaded = await loadRazorpayCheckout()
+      if (!scriptLoaded || !window.Razorpay) {
+        throw new Error('Unable to load secure payment checkout. Please check your connection and try again.')
+      }
+
+      const paymentResponse = await fetch(`${apiBase}/api/public/orders/${order.orderId}/payment`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accessToken: order.accessToken }),
+      })
+      const payment = await paymentResponse.json()
+      if (!paymentResponse.ok) throw new Error(payment.detail || payment.message || 'Unable to start payment. Please try again.')
+
+      const checkout = new window.Razorpay({
+        key: payment.keyId,
+        amount: payment.amount,
+        currency: payment.currency,
+        name: 'Olive & Ember',
+        description: `Order ${order.orderNumber}`,
+        order_id: payment.razorpayOrderId,
+        prefill: { name: customerName.trim(), contact: phoneNumber.trim() },
+        theme: { color: '#53634a' },
+        handler: async (result) => {
+          try {
+            const verificationResponse = await fetch(`${apiBase}/api/public/orders/${order.orderId}/payment/verify`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                accessToken: order.accessToken,
+                razorpayOrderId: result.razorpay_order_id,
+                razorpayPaymentId: result.razorpay_payment_id,
+                razorpaySignature: result.razorpay_signature,
+              }),
+            })
+            const verification = await verificationResponse.json()
+            if (!verificationResponse.ok) throw new Error(verification.detail || verification.message || 'Payment verification failed.')
+            if (verification.paymentStatus === 'SUCCESS') {
+              window.alert(`Payment successful! Order ${order.orderNumber} is awaiting restaurant confirmation.`)
+              setCheckoutOpen(false)
+              setCart({})
+              setCartOpen(false)
+            } else {
+              window.alert('Payment is being confirmed. Please keep your order number: ' + order.orderNumber)
+            }
+          } catch (error) {
+            setFormError(error instanceof Error ? error.message : 'Payment verification is pending. Please contact the restaurant with your order number.')
+          }
+        },
+        modal: {
+          ondismiss: () => setFormError(`Payment was not completed. Your order number is ${order.orderNumber}. You can contact the restaurant for help.`),
+        },
+      })
       setCheckoutOpen(false)
-      setCart({})
-      setCartOpen(false)
+      checkout.open()
     } catch (error) {
       setFormError(error instanceof Error ? error.message : 'Unable to connect to the restaurant. Please try again.')
     } finally {
